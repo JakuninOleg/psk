@@ -1,29 +1,14 @@
-# psk
+# Расчёт полной стоимости займа (ПСК)
 
-## Project setup
-```
-yarn install
-```
+- Небольшая программа для расчёта ПСК займов
+- Позволяет узнать новую ПСК при реструктуризации аннуитетных займов
+- Печать графика
 
-### Compiles and hot-reloads for development
-```
-yarn run serve
-```
+## TODO:
 
-### Compiles and minifies for production
-```
-yarn run build
-```
+- Изменить алгоритм выисления расчётого процента в базомо периоде
+- Добавить возможность сохранять и загружать данные пофамильно
 
-### Run your tests
-```
-yarn run test
-```
+### Demo
 
-### Lints and fixes files
-```
-yarn run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- https://psk-calculation.firebaseapp.com/
