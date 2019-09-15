@@ -21,8 +21,8 @@
       <app-payment v-for="payment in payments" :key="payment.index" :payment="payment"></app-payment>
     </div>
     <div class="form-grid">
-      <app-datePicker lang="ru" v-model="date" value-type="date" format="DD.MM.YY"></app-datePicker>
-      <input type="number" v-model.number="amount" placeholder="Сумма" />
+      <app-datePicker lang="ru" v-model="date" value-type="date" format="DD.MM.YY" width="100%" input-class="input"></app-datePicker>
+      <input type="number" v-model.number="amount" placeholder="Сумма" class="input" />
       <multiselect v-model="type" :options="options" placeholder="Тип платежа"></multiselect>
       <button class="btn" @click="addPayment">Добавить платёж</button>
     </div>
@@ -45,7 +45,8 @@ export default {
       cbp: 12.1666666667,
       i: null,
       printObj: {
-        extraCss: "https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+        extraCss:
+          "https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
       }
     };
   },
@@ -145,24 +146,17 @@ export default {
   font-size: 26px;
 }
 
-input,
-.mx-input {
+.input {
   padding: 5px 10px;
   font-size: 16px;
   border-radius: 5px;
   border: 1px solid #e8e8e8;
   color: black;
-}
-
-.mx-datepicker {
   width: 100%;
-}
-
-.mx-input {
   height: 40px;
 }
 
-input::placeholder,
+.input::placeholder,
 .multiselect__placeholder {
   color: #adadad;
   font-size: 14px;
