@@ -2,7 +2,7 @@
   <div class="home">
     <div id="printMe">
       <div class="heading-container">
-        <h1 class="heading-primary">Справка расчёт полной стоимости займа (ПСК)</h1>
+        <h1 class="heading-primary">Справка-расчёт полной стоимости займа (ПСК)</h1>
       </div>
       <div class="grid-table grid-table--top">
         <span class="psk grid-table__span grid-table__span--top">ПСК</span>
@@ -21,12 +21,19 @@
       <app-payment v-for="payment in payments" :key="payment.index" :payment="payment"></app-payment>
     </div>
     <div class="form-grid">
-      <app-datePicker lang="ru" v-model="date" value-type="date" format="DD.MM.YY" width="100%" input-class="input"></app-datePicker>
+      <app-datePicker
+        lang="ru"
+        v-model="date"
+        value-type="date"
+        format="DD.MM.YY"
+        width="100%"
+        input-class="input"
+      ></app-datePicker>
       <input type="number" v-model.number="amount" placeholder="Сумма" class="input" />
       <multiselect v-model="type" :options="options" placeholder="Тип платежа"></multiselect>
       <button class="btn" @click="addPayment">Добавить платёж</button>
     </div>
-    <button v-print="'#printMe'" class="btn btn--print">Распечатать</button>
+    <button v-print="'#printMe'" class="btn btn--print" :key="i">Распечатать</button>
   </div>
 </template>
 
@@ -43,11 +50,7 @@ export default {
       options: ["Выплата", "Оплата"],
       bp: 30,
       cbp: 12.1666666667,
-      i: null,
-      printObj: {
-        extraCss:
-          "https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
-      }
+      i: null
     };
   },
   components: {
@@ -70,7 +73,7 @@ export default {
           el.daysTotal =
             (Date.parse(el.dateComputed) - Date.parse(firstEl.dateComputed)) /
             (60 * 60 * 24 * 1000);
-          el.e = (el.daysTotal % this.bp) / this.bp;
+          el.e = ((el.daysTotal % this.bp) / this.bp).toFixed(10);
           el.q = Math.floor(el.daysTotal / this.bp);
         } else {
           el.e = 0;
@@ -129,9 +132,6 @@ export default {
         amountFormatted: this.amountFormatted
       };
       this.$store.dispatch("addPayment", payment);
-    },
-    print() {
-      this.$htmlToPaper("printMe");
     }
   }
 };
@@ -200,7 +200,6 @@ export default {
   width: 80%;
   display: grid;
   grid-template-columns: 100px 300px 300px 150px 150px;
-  border-left: 1px solid black;
   text-align: center;
   font-weight: 500;
 
@@ -218,11 +217,11 @@ export default {
   }
 
   &__span {
-    border: 1px solid black;
-    border-left: none;
+    border: 1px solid black !important;
     padding: 4px 6px;
     display: grid;
     align-items: center;
+    border-collapse: collapse;
   }
 }
 

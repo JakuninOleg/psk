@@ -5,6 +5,13 @@
 </template>
 
 <style lang="scss">
+@media print {
+  body {
+    padding: 50px;
+    -webkit-print-color-adjust:exact
+  }
+}
+
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -30,6 +37,6 @@ html {
 }
 
 body {
-  font-family: "Roboto", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, sans-serif;
 }
 </style>
