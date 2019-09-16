@@ -8,7 +8,7 @@
 @media print {
   body {
     padding: 50px;
-    -webkit-print-color-adjust:exact
+    -webkit-print-color-adjust: exact;
   }
 }
 
