@@ -99,6 +99,9 @@ export default {
       let s = 0.0001;
       let m = this.$store.getters.payments.length;
       let sumArr = this.$store.getters.payments.map(el => el.amount);
+      if (!sumArr.some(el => el < 0)) {
+        return ["Добавьте выплату", "Добавьте выплату"];
+      }
       let eArr = this.$store.getters.payments.map(el => el.e);
       let qArr = this.$store.getters.payments.map(el => el.q);
       while (x > 0) {
