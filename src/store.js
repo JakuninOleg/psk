@@ -7,8 +7,8 @@ export default new Vuex.Store({
   state: {
     payments: [],
     bp: 30,
-    psk: null,
-    i: null,
+    psk: 0,
+    i: 0,
     cbp: 12.1666666667
   },
   mutations: {
@@ -50,13 +50,13 @@ export default new Vuex.Store({
       let i = 0;
       let x = 1;
       let x_m = 0;
-      let s = 0.001;
+      let s = 0.0001;
 
       while (x > 0) {
         x_m = x;
         x = 0;
         payments.forEach(el => {
-          let den = (1 + el.e * i) * Math.pow(1 + i, el.q);
+          let den = parseFloat(((1 + el.e * i) * Math.pow(1 + i, el.q)).toFixed(9));
           x = x + el.amount / den;
           el.den = den.toFixed(9);
           el.denPrev = (
@@ -74,7 +74,7 @@ export default new Vuex.Store({
       x > x_m ? (i = i - s) : "";
 
       state.payments = payments;
-      state.psk = Math.floor(i * state.cbp * 100).toFixed(3) + "%";
+      state.psk = (i * state.cbp * 100).toFixed(3) + "%";
       state.i = (i * 100).toFixed(3) + "%";
     },
     'UPDATE_PAYMENTS'(state, payments) {
