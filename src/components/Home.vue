@@ -21,7 +21,11 @@
         <span class="grid-table__span">Знаменатель +</span>
         <span class="grid-table__span">Знаменатель -</span>
       </div>
-      <app-payment v-for="payment in payments" :key="payment.den" :payment="payment"></app-payment>
+      <app-payment
+        v-for="payment in payments"
+        :key="payments.indexOf(payment) + payment.den"
+        :payment="payment"
+      ></app-payment>
     </div>
     <div class="form-grid">
       <app-datePicker
@@ -57,11 +61,7 @@ export default {
       date: null,
       type: null,
       amount: null,
-      options: ["Выплата", "Оплата"],
-      cbp: 12.1666666667,
-      i: 0,
-      psk: 0,
-      error: null
+      options: ["Выплата", "Оплата"]
     };
   },
   validations: {
@@ -90,6 +90,12 @@ export default {
     },
     bp() {
       return this.$store.getters.bp;
+    },
+    i() {
+      return this.$store.getters.i;
+    },
+    psk() {
+      return this.$store.getters.psk;
     }
   },
   methods: {
@@ -106,45 +112,6 @@ export default {
         amountFormatted: this.amountFormatted
       };
       this.$store.dispatch("addPayment", payment);
-      this.findPSK();
-    },
-    findPSK() {
-      const payments = this.$store.getters.payments;
-
-      if (!payments.some(el => el.amount < 0)) {
-        [this.psk, this.i] = ["Добавьте выплату", "Добавьте выплату"];
-        return;
-      }
-
-      let i = 0;
-      let x = 1;
-      let x_m = 0;
-      let s = 0.001;
-
-      while (x > 0) {
-        x_m = x;
-        x = 0;
-        payments.forEach(el => {
-          let den = (1 + el.e * i) * Math.pow(1 + i, el.q);
-          x = x + el.amount / den;
-          el.den = den.toFixed(9);
-          el.denPrev = (
-            (1 + el.e * (i - s)) *
-            Math.pow(1 + (i - s), el.q)
-          ).toFixed(9);
-          el.denNext = (
-            (1 + el.e * (i + s)) *
-            Math.pow(1 + (i + s), el.q)
-          ).toFixed(9);
-        });
-        i = i + s;
-      }
-
-      x > x_m ? (i = i - s) : "";
-
-      this.$store.dispatch("updatePayments", payments);
-      this.psk = Math.floor(i * this.cbp * 100).toFixed(3) + "%";
-      this.i = (i * 100).toFixed(3) + "%";
     },
     validateForm() {},
     clearInput() {

@@ -16,7 +16,7 @@ export default {
   props: ["payment"],
   methods: {
     deletePayment() {
-      this.$store.dispatch('deletePayment', this.payment.index)
+      this.$store.dispatch("deletePayment", this.payment.index);
     }
   }
 };
