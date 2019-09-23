@@ -44,14 +44,20 @@
         @focus="clearInput"
       />
       <multiselect v-model="type" :options="options" placeholder="Тип платежа"></multiselect>
-      <button class="btn" @click="addPayment">Добавить платёж</button>
+      <button class="btn" @click="addPayment" :class="{shake: error}">Добавить платёж</button>
     </div>
+    <transition name='slide-fade'>
+      <app-error v-if="error">
+        <span class="error__progress" :style="{width: (timer*20) + '%'}"></span>
+      </app-error>
+    </transition>
     <button v-print="'#printMe'" class="btn btn--print" :key="i">Распечатать</button>
   </div>
 </template>
 
 <script>
-import payment from "./Payment.vue";
+import Payment from "./Payment.vue";
+import Error from "./Error.vue";
 import DatePicker from "vue2-datepicker";
 import { required, minValue } from "vuelidate/lib/validators";
 
@@ -61,7 +67,9 @@ export default {
       date: null,
       type: null,
       amount: null,
-      options: ["Выплата", "Оплата"]
+      options: ["Выплата", "Оплата"],
+      error: false,
+      timer: 5
     };
   },
   validations: {
@@ -71,8 +79,9 @@ export default {
     }
   },
   components: {
-    appPayment: payment,
-    appDatePicker: DatePicker
+    appPayment: Payment,
+    appDatePicker: DatePicker,
+    appError: Error
   },
   computed: {
     payments() {
@@ -100,6 +109,24 @@ export default {
   },
   methods: {
     addPayment() {
+      if (!this.validateForm()) {
+        this.error = true;
+        this.timer = 5;
+
+        let interval = setInterval(() => {
+          this.timer -= 0.1;
+          if (this.timer < 0) {
+            clearInterval(interval);
+          }
+        }, 100);
+
+        setTimeout(() => {
+          this.error = false;
+        }, 5100);
+
+        return;
+      }
+      this.error = false;
       const payment = {
         date: this.date.toLocaleString("ru-RU", {
           day: "numeric",
@@ -113,15 +140,23 @@ export default {
       };
       this.$store.dispatch("addPayment", payment);
     },
-    validateForm() {},
+    validateForm() {
+      return this.date != null && this.amount != null && this.type != null
+        ? true
+        : false;
+    },
     clearInput() {
-      this.amount = "";
+      this.amount = null;
     }
   }
 };
 </script>
 
 <style lang="scss">
+.home {
+  position: relative;
+}
+
 .heading-container {
   padding-bottom: 50px;
 }
@@ -170,13 +205,10 @@ export default {
   background: #68d391;
   font-family: inherit;
 
-  &--delete {
-    background: #e53e3e;
-  }
-
   &--print {
     margin-top: 50px;
     padding: 10px 20px;
+    background: #63b3ed;
   }
 
   &:active {
@@ -230,6 +262,38 @@ export default {
 
 .home {
   padding: 50px;
+}
+
+.slide-fade-enter-active {
+  transition: all .5s ease-out;
+}
+.slide-fade-leave-active {
+  transition: all .5s ease-out;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateX(10px);
+  opacity: 0;
+}
+.shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%, 80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%, 50%, 70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%, 60% {
+    transform: translate3d(4px, 0, 0);
+  }
 }
 </style>
 

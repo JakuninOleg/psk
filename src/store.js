@@ -56,7 +56,7 @@ export default new Vuex.Store({
         x_m = x;
         x = 0;
         payments.forEach(el => {
-          let den = parseFloat(((1 + el.e * i) * Math.pow(1 + i, el.q)).toFixed(9));
+          let den = ((1 + el.e * i) * Math.pow(1 + i, el.q));
           x = x + el.amount / den;
           el.den = den.toFixed(9);
           el.denPrev = (
