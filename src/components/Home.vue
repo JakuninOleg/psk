@@ -6,9 +6,9 @@
       </div>
       <div class="grid-table grid-table--top">
         <span class="psk grid-table__span grid-table__span--top">ПСК</span>
-        <span class="psk-result grid-table__span grid-table__span--top">{{findPSK[0]}}</span>
+        <span class="psk-result grid-table__span grid-table__span--top">{{psk}}</span>
         <span class="bp grid-table__span grid-table__span--top">Расчётый % в базовый период</span>
-        <span class="bp-percent grid-table__span grid-table__span--top">{{findPSK[1]}}</span>
+        <span class="bp-percent grid-table__span grid-table__span--top">{{i}}</span>
       </div>
 
       <div class="grid-table">
@@ -17,8 +17,11 @@
         <span class="grid-table__span">Дней с последней оплаты</span>
         <span class="grid-table__span">Ek</span>
         <span class="grid-table__span">Qk</span>
+        <span class="grid-table__span">Знаменатель</span>
+        <span class="grid-table__span">Знаменатель +</span>
+        <span class="grid-table__span">Знаменатель -</span>
       </div>
-      <app-payment v-for="payment in payments" :key="payment.index" :payment="payment"></app-payment>
+      <app-payment v-for="payment in payments" :key="payment.den" :payment="payment"></app-payment>
     </div>
     <div class="form-grid">
       <app-datePicker
@@ -29,7 +32,13 @@
         width="100%"
         input-class="input"
       ></app-datePicker>
-      <input type="number" v-model.number="amount" placeholder="Сумма" class="input" />
+      <input
+        type="number"
+        v-model.number="amount"
+        placeholder="Сумма"
+        class="input"
+        @focus="clearInput"
+      />
       <multiselect v-model="type" :options="options" placeholder="Тип платежа"></multiselect>
       <button class="btn" @click="addPayment">Добавить платёж</button>
     </div>
@@ -40,6 +49,7 @@
 <script>
 import payment from "./Payment.vue";
 import DatePicker from "vue2-datepicker";
+import { required, minValue } from "vuelidate/lib/validators";
 
 export default {
   data() {
@@ -48,10 +58,17 @@ export default {
       type: null,
       amount: null,
       options: ["Выплата", "Оплата"],
-      bp: 30,
       cbp: 12.1666666667,
-      i: null
+      i: 0,
+      psk: 0,
+      error: null
     };
+  },
+  validations: {
+    amount: {
+      required,
+      minValue: minValue(0)
+    }
   },
   components: {
     appPayment: payment,
@@ -59,28 +76,7 @@ export default {
   },
   computed: {
     payments() {
-      const payments = this.$store.getters.payments;
-      payments.sort((a, b) => {
-        return a.dateComputed - b.dateComputed;
-      });
-      payments.forEach(el => {
-        if (payments.indexOf(el) > 0) {
-          const prevEl = payments[payments.indexOf(el) - 1];
-          const firstEl = payments[0];
-          el.days =
-            (Date.parse(el.dateComputed) - Date.parse(prevEl.dateComputed)) /
-            (60 * 60 * 24 * 1000);
-          el.daysTotal =
-            (Date.parse(el.dateComputed) - Date.parse(firstEl.dateComputed)) /
-            (60 * 60 * 24 * 1000);
-          el.e = ((el.daysTotal % this.bp) / this.bp).toFixed(10);
-          el.q = Math.floor(el.daysTotal / this.bp);
-        } else {
-          el.e = 0;
-          el.q = 0;
-        }
-      });
-      return payments;
+      return this.$store.getters.payments;
     },
     amountCalc() {
       return this.type == "Выплата" ? 0 - this.amount : this.amount;
@@ -92,33 +88,8 @@ export default {
       }).format(this.amount);
       return this.amountCalc < 0 ? "- " + formatAmount : formatAmount;
     },
-    findPSK() {
-      let i = 0;
-      let x = 1;
-      let x_m = 0;
-      let s = 0.0001;
-      let m = this.$store.getters.payments.length;
-      let sumArr = this.$store.getters.payments.map(el => el.amount);
-      if (!sumArr.some(el => el < 0)) {
-        return ["Добавьте выплату", "Добавьте выплату"];
-      }
-      let eArr = this.$store.getters.payments.map(el => el.e);
-      let qArr = this.$store.getters.payments.map(el => el.q);
-      while (x > 0) {
-        x_m = x;
-        x = 0;
-        for (let k = 0; k < m; k++) {
-          x = x + sumArr[k] / ((1 + eArr[k] * i) * Math.pow(1 + i, qArr[k]));
-        }
-        i = i + s;
-      }
-      if (x > x_m) {
-        i = i - s;
-      }
-      return [
-        (Math.floor(i * this.cbp * 100 * 1000) / 1000).toFixed(3) + "%",
-        (i * 100).toFixed(3) + "%"
-      ];
+    bp() {
+      return this.$store.getters.bp;
     }
   },
   methods: {
@@ -135,6 +106,49 @@ export default {
         amountFormatted: this.amountFormatted
       };
       this.$store.dispatch("addPayment", payment);
+      this.findPSK();
+    },
+    findPSK() {
+      const payments = this.$store.getters.payments;
+
+      if (!payments.some(el => el.amount < 0)) {
+        [this.psk, this.i] = ["Добавьте выплату", "Добавьте выплату"];
+        return;
+      }
+
+      let i = 0;
+      let x = 1;
+      let x_m = 0;
+      let s = 0.001;
+
+      while (x > 0) {
+        x_m = x;
+        x = 0;
+        payments.forEach(el => {
+          let den = (1 + el.e * i) * Math.pow(1 + i, el.q);
+          x = x + el.amount / den;
+          el.den = den.toFixed(9);
+          el.denPrev = (
+            (1 + el.e * (i - s)) *
+            Math.pow(1 + (i - s), el.q)
+          ).toFixed(9);
+          el.denNext = (
+            (1 + el.e * (i + s)) *
+            Math.pow(1 + (i + s), el.q)
+          ).toFixed(9);
+        });
+        i = i + s;
+      }
+
+      x > x_m ? (i = i - s) : "";
+
+      this.$store.dispatch("updatePayments", payments);
+      this.psk = Math.floor(i * this.cbp * 100).toFixed(3) + "%";
+      this.i = (i * 100).toFixed(3) + "%";
+    },
+    validateForm() {},
+    clearInput() {
+      this.amount = "";
     }
   }
 };
@@ -172,10 +186,10 @@ export default {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(min-content, 1fr));
+  grid-template-columns: repeat(3, 300px) 200px;
   grid-gap: 20px;
-  width: 80%;
-  padding-top: 100px;
+  width: 67%;
+  padding-top: 80px;
 }
 
 .btn {
@@ -189,6 +203,10 @@ export default {
   background: #68d391;
   font-family: inherit;
 
+  &--delete {
+    background: #e53e3e;
+  }
+
   &--print {
     margin-top: 50px;
     padding: 10px 20px;
@@ -200,15 +218,20 @@ export default {
 }
 
 .grid-table {
-  width: 80%;
+  width: 1350px;
   display: grid;
-  grid-template-columns: 100px 300px 300px 150px 150px;
+  grid-template-columns: 150px 250px 250px 175px 75px 150px 150px 150px;
   text-align: center;
   font-weight: 500;
 
   &--content {
     text-align: right;
     font-weight: 400;
+
+    &:hover {
+      cursor: pointer;
+      background: #fed7d7;
+    }
   }
 
   &--top {
