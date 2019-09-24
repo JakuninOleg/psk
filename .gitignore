@@ -3,6 +3,8 @@
 node_modules
 /dist
 /.firebase
+.gitignore
+/.gitignore
 
 # local env files
 .env.local

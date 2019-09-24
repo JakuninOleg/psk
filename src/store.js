@@ -42,7 +42,7 @@ export default new Vuex.Store({
     'FIND_PSK'(state) {
       const payments = state.payments;
 
-      if (payments[0].amount > 0) {
+      if (payments.length < 1 || payments[0].amount > 0) {
         [state.psk, state.i] = ["Добавьте выплату", "Добавьте выплату"];
         return;
       }
@@ -50,7 +50,7 @@ export default new Vuex.Store({
       let i = 0;
       let x = 1;
       let x_m = 0;
-      let s = 0.0001;
+      let s = 0.000001;
 
       while (x > 0) {
         x_m = x;
@@ -87,7 +87,9 @@ export default new Vuex.Store({
   actions: {
     addPayment({commit}, payload) {
       commit('ADD_PAYMENT', payload)
-      commit('FIND_PSK')
+      setTimeout(() => {
+        commit('FIND_PSK')
+      }, 100)
     },
     updatePayments({commit}, payload) {
       commit('UPDATE_PAYMENTS', payload)
