@@ -4,6 +4,9 @@ import router from './router'
 import store from './store'
 import Multiselect from 'vue-multiselect'
 import Print from 'vue-print-nb'
+import VueTippy from "vue-tippy";
+
+Vue.use(VueTippy);
 
 Vue.config.productionTip = false
 

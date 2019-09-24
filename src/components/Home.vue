@@ -25,6 +25,8 @@
         v-for="payment in payments"
         :key="payments.indexOf(payment) + payment.den"
         :payment="payment"
+        content="Нажмите для удаления"
+        v-tippy="{arrow : true, arrowType : 'round', animation : 'fade',  placement : 'right'}"
       ></app-payment>
     </div>
     <div class="form-grid">
@@ -46,7 +48,7 @@
       <multiselect v-model="type" :options="options" placeholder="Тип платежа"></multiselect>
       <button class="btn" @click="addPayment" :class="{shake: error}">Добавить платёж</button>
     </div>
-    <transition name='slide-fade'>
+    <transition name="slide-fade">
       <app-error v-if="error">
         <span class="error__progress" :style="{width: (timer*20) + '%'}"></span>
       </app-error>
@@ -57,9 +59,8 @@
 
 <script>
 import Payment from "./Payment.vue";
-import Error from "./Error.vue";
+import AppError from "./Error.vue";
 import DatePicker from "vue2-datepicker";
-import { required, minValue } from "vuelidate/lib/validators";
 
 export default {
   data() {
@@ -72,16 +73,10 @@ export default {
       timer: 5
     };
   },
-  validations: {
-    amount: {
-      required,
-      minValue: minValue(0)
-    }
-  },
   components: {
     appPayment: Payment,
     appDatePicker: DatePicker,
-    appError: Error
+    appError: AppError
   },
   computed: {
     payments() {
@@ -222,6 +217,7 @@ export default {
   grid-template-columns: 150px 250px 250px 175px 75px 150px 150px 150px;
   text-align: center;
   font-weight: 500;
+  font-size: 14px;
 
   &--content {
     text-align: right;
@@ -265,34 +261,44 @@ export default {
 }
 
 .slide-fade-enter-active {
-  transition: all .5s ease-out;
+  transition: all 0.5s ease-out;
 }
 .slide-fade-leave-active {
-  transition: all .5s ease-out;
+  transition: all 0.5s ease-out;
 }
-.slide-fade-enter, .slide-fade-leave-to {
+.slide-fade-enter,
+.slide-fade-leave-to {
   transform: translateX(10px);
   opacity: 0;
 }
 .shake {
-  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 @keyframes shake {
-  10%, 90% {
+  10%,
+  90% {
     transform: translate3d(-1px, 0, 0);
+    border: 1px solid #e53e3e;
   }
 
-  20%, 80% {
+  20%,
+  80% {
     transform: translate3d(2px, 0, 0);
+    border: 1px solid #f56565;
   }
 
-  30%, 50%, 70% {
+  30%,
+  50%,
+  70% {
     transform: translate3d(-4px, 0, 0);
+    border: 1px solid #e53e3e;
   }
 
-  40%, 60% {
+  40%,
+  60% {
     transform: translate3d(4px, 0, 0);
+    border: 1px solid #f56565;
   }
 }
 </style>
