@@ -38,9 +38,9 @@
         width="100%"
         input-class="input"
       ></app-datePicker>
-      <input
-        type="number"
-        v-model.number="amount"
+      <currency-input
+        v-model="amount"
+        v-currency="{currency: 'RUB', locale: 'ru', distractionFree: false}"
         placeholder="Сумма"
         class="input"
         @focus="clearInput"
