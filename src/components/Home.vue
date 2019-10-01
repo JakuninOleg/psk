@@ -23,7 +23,7 @@
       </div>
       <app-payment
         v-for="payment in payments"
-        :key="payments.indexOf(payment) + payment.den"
+        :key="payments.indexOf(payment) + payment.den + payment.e"
         :payment="payment"
         content="Нажмите для удаления"
         v-tippy="{arrow : true, arrowType : 'round', animation : 'fade',  placement : 'right'}"
@@ -121,7 +121,9 @@ export default {
 
         return;
       }
+
       this.error = false;
+
       const payment = {
         date: this.date.toLocaleString("ru-RU", {
           day: "numeric",
